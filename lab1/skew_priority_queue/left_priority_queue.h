@@ -22,6 +22,13 @@ protected:
 	node* _root;
 
 protected:
+    virtual void keep_leftist(node * n) const{
+        if (get_dist(n->left_subtree) < get_dist(n->right_subtree)) {
+            std::swap(n->left_subtree, n->right_subtree);
+        }
+    }
+
+protected:
     static void delete_leftists_trees(node*tree_root) {
         if (tree_root == nullptr) {
             return;
@@ -69,11 +76,11 @@ protected:
         if (_priority_comparer(b->_priority, a->_priority) > 0) {
             std::swap(a, b);
         }
+        std::swap(a->left_subtree, a->right_subtree);
+
         a->right_subtree = merge_nodes(a->right_subtree, b);
         
-        if (get_dist(a->left_subtree) < get_dist(a->right_subtree)) {
-            std::swap(a->left_subtree, a->right_subtree);
-        }
+        keep_leftist(a);
         
         a->_dist = get_dist(a->right_subtree) + 1;
         
@@ -103,11 +110,11 @@ public:
     char* remove_max();
 
     //вспомогательные функции
-    void print_queue();
+    void print_queue() const;
 
 protected:
     //вспомогательные функции
-    void print_node( node * n );
+    void print_node(node const * n, size_t depth) const;
 };
 
 
@@ -171,6 +178,7 @@ void left_priority_queue::insert(int priority, char const* value) {
 }
 //meld()
 mergeable_priority_queue* left_priority_queue::meld(mergeable_priority_queue const* to_meld_with) const {
+    std::cout << "Started lpq::meld...";
     auto other = dynamic_cast<const left_priority_queue*>(to_meld_with);
     if (!other) throw std::invalid_argument("Can't merge: invalid type of argument");
     left_priority_queue* result = new left_priority_queue(_priority_comparer);
@@ -179,6 +187,9 @@ mergeable_priority_queue* left_priority_queue::meld(mergeable_priority_queue con
     node* copy2 = copy_leftist_trees(other->_root);
     result->_root = merge_nodes(copy1, copy2);
     result->_values_count = _values_count + other->_values_count;
+    
+    std::cout << "Finished lpq::meld...";
+    
     return result;
 }
 
@@ -198,27 +209,29 @@ char* left_priority_queue::remove_max() {
     return max_value;
 }
 
-void left_priority_queue::print_queue() {
-    print_node(this->_root);
+void left_priority_queue::print_queue() const {
+    print_node(this->_root, 0);
     std::cout << std::endl;
     std::cout << "Elements in queue: " << this->_values_count << std::endl;
     std::cout << std::endl;
 }
 
-void left_priority_queue::print_node(node * n) {
+void left_priority_queue::print_node(node const *n, size_t depth) const{
+    for (int i = 0; i < depth; ++i)
+    {
+        std::cout << "  ";
+    }
+
     if (n == nullptr) {
-        std::cout << "BR_END" << std::endl;
+        std::cout << "EMPTY" << std::endl;
         return;
     }
 
-    std::cout << "Node { " << n->_value << " : " << n->_priority << " } -> ";
+    std::cout << "Node { " << n->_value << " : " << n->_priority << " }" << std::endl;
 
     if (n->left_subtree != nullptr || n->right_subtree != nullptr) {
-        std::cout << " ( ";
-        print_node(n->left_subtree);
-        std::cout << " ; ";
-        print_node(n->right_subtree);
-        std::cout << " )";
+        print_node(n->left_subtree, depth + 1);
+        print_node(n->right_subtree, depth + 1);
     }
 }
 
