@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <stdexcept> 
 #include "skew_priority_queue.h"
 
@@ -12,7 +12,12 @@ int main() {
     skew_priority_queue anotherQueue(priorityCMP);
 
     for (int i = 0; i < 10; ++i) {
-        myQueue.insert(rand() % 100 + 1, values[rand() % 10]);
+        int cur_pri = rand() % 100 + 1;
+        char const * cur_val = values[rand() % 10];
+
+        myQueue.insert(cur_pri, cur_val);
+        std::cout << cur_pri << " ";
+
         anotherQueue.insert(rand() % 100 + 1, values[rand() % 10]);
     }
 
@@ -44,8 +49,6 @@ int main() {
     skew_priority_queue* oneMoreQueue;
     oneMoreQueue = dynamic_cast<skew_priority_queue*>(myQueue.meld(&anotherQueue));
 
-
-    // TODO: Исправить ошибку
     std::cout << "Melded q1 and q2(for now it is empty) to another queue: " << std::endl << std::endl;
     oneMoreQueue->print_queue();
     std::cout << "=============================================" << std::endl;
