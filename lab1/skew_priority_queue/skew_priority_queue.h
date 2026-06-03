@@ -4,43 +4,52 @@
 #include "left_priority_queue.h"
 #pragma warning( disable : 4996)
 
-class skew_priority_queue final: public left_priority_queue {
+class skew_priority_queue final : public left_priority_queue {
 public:
-    // Конструктор
+
+    //РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
     skew_priority_queue(int (*comparer)(int, int))
         : left_priority_queue(comparer) {
+
     }
 
-    // Конструктор копирования
+    //РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
     skew_priority_queue(const skew_priority_queue& other)
-        : left_priority_queue(other) 
+        : left_priority_queue(dynamic_cast<left_priority_queue const &>(other))
     {
 
     }
 
-    // Оператор присваивания
+    //РѕРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
     skew_priority_queue& operator=(const skew_priority_queue& other) {
         if (this != &other) {
-            left_priority_queue::operator=(other); 
+            left_priority_queue::operator=(dynamic_cast<left_priority_queue const &>(other)); 
         }
         return *this;
     }
 
-    // Деструктор
+    //РґРµСЃС‚СЂСѓРєС‚РѕСЂ
     ~skew_priority_queue() {
 
     }
 
-protected:
-    node* merge_nodes(node* a, node* b) const {
-        if (!a) return b;
-        if (!b) return a;
-        if (_priority_comparer(b->_priority, a->_priority) > 0) std::swap(a, b);
-        a->right_subtree = merge_nodes(a->right_subtree, b);
-        std::swap(a->left_subtree, a->right_subtree);
-        return a;
+    mergeable_priority_queue* meld(mergeable_priority_queue const* to_meld_with) const override {
+        auto other = dynamic_cast<const skew_priority_queue *>(to_meld_with);
+        if (!other) throw std::invalid_argument("Can't merge: invalid type of argument");
+        skew_priority_queue* result = new skew_priority_queue(_priority_comparer);
+
+        node* copy1 = copy_leftist_trees(_root);
+        node* copy2 = copy_leftist_trees(other->_root);
+        result->_root = merge_nodes(copy1, copy2);
+        result->_values_count = _values_count + other->_values_count;
+                
+        return result;
     }
 
+private:
+    virtual void keep_leftist(node * n) const override {
+
+    }
 };
 
 #endif
